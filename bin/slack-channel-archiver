@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+main() {
+    local BASE_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd)"
+
+    cd "$BASE_DIR"
+
+    if ! bundle -v >/dev/null 2>&1; then
+        echo "Cannot find bundler; exiting..."
+        exit 1
+    fi
+
+    if ! bundle install --local --without development >/dev/null 2>&1; then
+        bundle install --without development
+    fi
+
+    bundle exec ruby -I"$BASE_DIR/lib" "$BASE_DIR/lib/main.rb" "$@"
+}
+
+main "$@"
