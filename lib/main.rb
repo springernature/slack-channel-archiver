@@ -1,9 +1,40 @@
 require 'yaml'
+require 'slack'
 
 class SlackChannelArchiver
 
     def initialize(api_token)
-        puts "API token is #{api_token}"
+        Slack.configure do |config|
+            config.token = api_token
+        end
+
+        @client = Slack::Web::Client.new
+        @client.auth_test
+    end
+
+    def archive_channels_unused_for_days(number_of_days)
+        unarchived_public_channels = @client.channels_list(exclude_archived: true).channels
+
+        unarchived_public_channels.each do |current_channel|
+            channel_info = @client.channels_info(channel: current_channel.id)
+            channel_created = Time.at(channel_info.channel.created)
+            if days_ago(channel_created) > number_of_days        
+                last_messages = @client.channels_history(channel: current_channel.id, count: 1)
+                if last_messages.messages.empty?
+                    puts "! Channel #{current_channel.name} is older than #{number_of_days} and has no messages"
+                elsif days_ago(last_messages.messages.first.ts.to_d) > number_of_days
+                    puts "! Channel #{current_channel.name} is older than #{number_of_days} days and has had no messages in at least #{number_of_days} days"
+                else
+                    puts "o Channel #{current_channel.name} is in regular use"
+                end
+            else
+                puts "o Channel #{current_channel.name} is newer than #{number_of_days} days"
+            end
+        end
+    end
+
+    def days_ago(time)
+        (Time.now - time).to_i / 86400
     end
 
 end
@@ -18,6 +49,7 @@ class Launcher
         end
 
         slack_channel_archiver = SlackChannelArchiver.new(api_token)
+        slack_channel_archiver.archive_channels_unused_for_days(60)
     end
 
     private
