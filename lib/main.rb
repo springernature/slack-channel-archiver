@@ -42,20 +42,25 @@ end
 class Launcher
 
     def initialize(args)
-        api_token = read_api_token(args)
-        if api_token.nil?
-            $stderr.puts("Usage: $0 [api-token]")
+        number_of_days = (args[0] || DEFAULT_NUMBER_OF_DAYS).to_i
+        api_token = read_api_token(args[1])
+        if number_of_days.nil? || api_token.nil?
+            $stderr.puts("Usage: $0 [number-of-days=#{DEFAULT_NUMBER_OF_DAYS}] [api-token]")
             $stderr.puts("Alternately you may specify the API token in ~/.slack-channel-archiver as 'api-token', or via env car SLACK_API_TOKEN")
         end
 
+        puts "Channels that have existed but have had no new messages for at least #{number_of_days} days will be archived"
+
         slack_channel_archiver = SlackChannelArchiver.new(api_token)
-        slack_channel_archiver.archive_channels_unused_for_days(60)
+        slack_channel_archiver.archive_channels_unused_for_days(number_of_days)
     end
 
     private
 
-    def read_api_token(args)
-        api_token = args.first
+    DEFAULT_NUMBER_OF_DAYS = 90
+
+    def read_api_token(api_token_arg)
+        api_token = api_token_arg
 
         api_token = ENV['SLACK_API_TOKEN'] if api_token.nil?
 
