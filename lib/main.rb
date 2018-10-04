@@ -18,7 +18,7 @@ class SlackChannelArchiver
         archived_count = 0
 
         unarchived_public_channels.each do |current_channel|
-            archived_count += archive_channel_if_inactive_for(number_of_days, current_channel)
+            archived_count += 1 if archive_channel_if_inactive_for(number_of_days, current_channel)
 
             # channels_history is a tier 3 method, so we needs to limit acess to ~50 a minute - https://api.slack.com/docs/rate-limits#tier_t3
             sleep(1)
@@ -30,7 +30,7 @@ class SlackChannelArchiver
     private
 
     def archive_channel_if_inactive_for(number_of_days, channel)
-        archived_count = 0
+        archived = false
 
         if days_ago(Time.at(channel.created)) > number_of_days        
             last_messages = @client.channels_history(channel: channel.id, count: 1)
@@ -38,13 +38,13 @@ class SlackChannelArchiver
                 puts "! Channel #{channel.name} is older than #{number_of_days} and has no messages"
                 # @client.chat_postMessage(channel: channel.id, text: "This channel has had no new messages in #{number_of_days} and will hence be archived - any queries, please see #slack-admin")
                 # @client.channels_archive(channel: channel.id)
-                archived_count = 1
+                archived = true
 
             elsif days_ago(last_messages.messages.first.ts.to_d) > number_of_days
                 puts "! Channel #{channel.name} is older than #{number_of_days} days and has had no messages in at least #{number_of_days} days"
                 # @client.chat_postMessage(channel: channel.id, text: "This channel is older than #{number_of_days} days and has no messages, and will hence be archived - any queries, please see #slack-admin")
                 # @client.channels_archive(channel: channel.id)
-                archived_count = 1
+                archived = true
 
             else
                 puts "o Channel #{channel.name} is in regular use"
@@ -53,7 +53,7 @@ class SlackChannelArchiver
             puts "o Channel #{channel.name} is newer than #{number_of_days} days"
         end
 
-        archived_count
+        archived
     end
 
     def days_ago(time)
