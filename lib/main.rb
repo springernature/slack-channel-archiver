@@ -69,6 +69,7 @@ class Launcher
         if number_of_days.nil? || api_token.nil?
             $stderr.puts "Usage: $0 [number-of-days=#{DEFAULT_NUMBER_OF_DAYS}] [api-token]"
             $stderr.puts "Alternately you may specify the API token in ~/.slack-channel-archiver as 'api-token', or via env car SLACK_API_TOKEN"
+            exit(1)
         end
 
         puts "Channels that have existed but have had no new messages for at least #{number_of_days} days will be archived"
