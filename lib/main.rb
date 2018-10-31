@@ -18,8 +18,6 @@ class SlackChannelArchiver
 
         unarchived_public_channels.each do |current_channel|
             archived_count += 1 if archive_channel_if_inactive_for(number_of_days, current_channel)
-
-            # channels_history is a tier 3 method, so we needs to limit acess to ~50 a minute - https://api.slack.com/docs/rate-limits#tier_t3
             sleep(1)
         end
 
