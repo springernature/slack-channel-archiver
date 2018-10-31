@@ -35,13 +35,13 @@ class SlackChannelArchiver
             last_messages = @user_client.channels_history(channel: channel.id, count: 1)
             if last_messages.messages.empty?
                 puts "x Channel #{channel.name} is older than #{number_of_days} and has no messages"
-                @client.chat_postMessage(channel: channel.id, text: "This channel has had no new messages in #{number_of_days} and will hence be archived - any queries, please see #slack-admin")
+                @client.chat_postMessage(channel: channel.id, text: "This channel has had no new messages in #{number_of_days} and will hence be archived")
                 @user_client.channels_archive(channel: channel.id)
                 archived = true
 
             elsif days_ago(last_messages.messages.first.ts.to_d) > number_of_days
                 puts "x Channel #{channel.name} is older than #{number_of_days} days and has had no messages in at least #{number_of_days} days"
-                @client.chat_postMessage(channel: channel.id, text: "This channel is older than #{number_of_days} days and has no messages, and will hence be archived - any queries, please see #slack-admin")
+                @client.chat_postMessage(channel: channel.id, text: "This channel is older than #{number_of_days} days and has no messages, and will hence be archived")
                 @user_client.channels_archive(channel: channel.id)
                 archived = true
             else
