@@ -1,6 +1,6 @@
 # Slack Channel Archiver
 
-A simple tool to help archive channels that haven't been used for a while.
+A simple tool to help archive public channels that haven't been used for a while.
 
 ## Running
 
