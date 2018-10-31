@@ -2,14 +2,25 @@
 
 A simple tool to help archive public channels that haven't been used for a while.
 
-## Running
+## Requirements
 
-You'll need the following pre-requisites.
+The following pre-requisites are required.
 
 * Ruby 2.5.1
 * Bundler
 
-You'll need a bot & user API tokens to run it. This can be specified in three ways, in order of priority:
+This has only been tested in *nix environment (e.g. MacOS/Linux) although there's nothing tying it to these platforms.
+
+You'll also require `bot` and `user` API tokens from Slack. You can obtain new API tokens by [creating a new App](https://api.slack.com/apps/new) in Slack. The token must have the following scopes:
+* `bot`
+* `chat:write:bot`
+* `channels:write`
+* `channels:read`
+* `channels:history`.
+
+## Running
+
+The `bot` and `user` API tokens can be specified in three ways, in order of priority:
 
 1. Pass it as the trailing arguments, e.g. `bin/slack-channel-archiver 90 bot-api-token user-api-token`
 1. Set it as env var `BOT_SLACK_API_TOKEN`/`USER_SLACK_API_TOKEN`, e.g. `BOT_SLACK_API_TOKEN=api-token USER_SLACK_API_TOKEN=another-token bin/slack-channel-archiver`
@@ -18,15 +29,6 @@ You'll need a bot & user API tokens to run it. This can be specified in three wa
 bot-api-token: an-api-token
 user-api-token: another-api-token
 ```
-    
-You can obtain new API tokens by [creating a new App](https://api.slack.com/apps/new) in Slack. You'll need the scopes:
-* `bot`
-* `chat:write:bot`
-* `channels:write`
-* `channels:read`
-* `channels:history`.
-
-Note that channels will be marked as archived by the user who installed the app, as Slack doesn't allow bots to archive channels.
 
 Usage:
 
@@ -34,4 +36,14 @@ Usage:
 
 On the first run it'll install dependencies, which may be a bit noisy.
 
-Due to rate limits on the Slack side it'll run quite slowly - about 1 channel/second will be tested.
+Due to rate limits on the Slack side it'll run quite slowly - about 1 channel/second will be tested. Also please note that channels will be marked as archived by the user who installed the app, as Slack doesn't allow bots to archive channels.
+
+## Support
+
+Support is on a best-effort basis. We'll endeavour to keep it in a good state and to respond to any issues/requests, but it works nicely for our purposes and is unlikely to see any major feature enhancements.
+
+## Licencing 
+
+This code is licenced under an MIT licence as described in [LICENSE](LICENSE).
+
+Copyright &copy; 2018 Springer Nature Ltd.
