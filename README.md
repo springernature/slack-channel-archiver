@@ -6,8 +6,8 @@ A simple tool to help archive public channels that haven't been used for a while
 
 The following pre-requisites are required.
 
-* Ruby 2.5.1
-* Bundler
+* [Ruby](https://www.ruby-lang.org/) 2.5.1
+* [Bundler](https://bundler.io/)
 
 This has only been tested in *nix environment (e.g. MacOS/Linux) although there's nothing tying it to these platforms.
 
