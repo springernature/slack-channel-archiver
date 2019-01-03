@@ -18,7 +18,9 @@ You'll also require `bot` and `user` API tokens from Slack. You can obtain new A
 * `channels:read`
 * `channels:history`.
 
-## Running
+## Configuration
+
+### API Tokens
 
 The `bot` and `user` API tokens can be specified in three ways, in order of priority:
 
@@ -29,6 +31,27 @@ The `bot` and `user` API tokens can be specified in three ways, in order of prio
 bot-api-token: an-api-token
 user-api-token: another-api-token
 ```
+
+### Configuration File
+
+You can use the following configuration options in `~/.slack-channel-archiver`:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| bot-api-token | string | Slack bot API token, as described above |
+| user-api-token | string | Slack user API token, as described above |
+| ignored-channel-names | list of strings | Names of channels that should never be archived, even if they match the archive criteria |
+
+For example:
+```
+bot-api-token: xoxb-a-bot-api-token
+user-api-token: xoxp-a-user-api-token
+ignored-channel-names:
+- channel1
+- channel2
+```
+
+## Running
 
 Usage:
 

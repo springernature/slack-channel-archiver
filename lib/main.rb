@@ -3,12 +3,14 @@ require 'slack'
 
 class SlackChannelArchiver
 
-    def initialize(bot_api_token, user_api_token)
+    def initialize(bot_api_token, user_api_token, ignored_channel_names = nil)
         @client = Slack::Web::Client.new(token: bot_api_token)
         @client.auth_test
 
         @user_client = Slack::Web::Client.new(token: user_api_token)
         @user_client.auth_test
+
+        @ignored_channel_names = ignored_channel_names || []
     end
 
     def archive_channels_inactive_for(number_of_days)
@@ -26,10 +28,16 @@ class SlackChannelArchiver
 
     private
 
-    def archive_channel(channel_id, archive_message)
-        @client.chat_postMessage(channel: channel_id, text: archive_message) unless archive_message.nil?
-        @user_client.channels_archive(channel: channel_id)
-        true
+    def archive_channel(channel_id, channel_name, archive_message)
+        if @ignored_channel_names.include?(channel_name)
+            puts "- Channel #{channel_name} is in the ignore list"
+            false
+        else
+            puts "x Channel #{channel_name} will be archived: #{archive_message}"
+            @client.chat_postMessage(channel: channel_id, text: archive_message) unless archive_message.nil?
+            @user_client.channels_archive(channel: channel_id)
+            true
+        end
     end
 
     def archive_channel_if_inactive_for(number_of_days, channel)
@@ -38,12 +46,10 @@ class SlackChannelArchiver
         if days_ago(Time.at(channel.created)) > number_of_days        
             last_messages = @user_client.channels_history(channel: channel.id, count: 1)
             if last_messages.messages.empty?
-                puts "x Channel #{channel.name} is older than #{number_of_days} and has no messages"
-                archived = archive_channel(channel.id, "This channel is older than #{number_of_days} days and has no messages, and will hence be archived")
+                archived = archive_channel(channel.id, channel.name, "This channel is older than #{number_of_days} days and has no messages, and will hence be archived")
 
             elsif days_ago(last_messages.messages.first.ts.to_d) > number_of_days
-                puts "x Channel #{channel.name} is older than #{number_of_days} days and has had no messages in at least #{number_of_days} days"
-                archived = archive_channel(channel.id, "This channel has had no new messages in #{number_of_days} and will hence be archived")
+                archived = archive_channel(channel.id, channel.name, "This channel has had no new messages in #{number_of_days} and will hence be archived")
 
             else
                 puts "- Channel #{channel.name} is in regular use"
@@ -65,7 +71,8 @@ class Launcher
 
     def initialize(args)
         number_of_days = (args[0] || DEFAULT_NUMBER_OF_DAYS).to_i
-        bot_api_token, user_api_token = read_api_token(args[1], args[2])
+        config = read_config()
+        bot_api_token, user_api_token = read_api_token(args[1], args[2], config)
         if number_of_days.nil? || bot_api_token.nil? || user_api_token.nil?
             $stderr.puts "Usage: $0 [number-of-days=#{DEFAULT_NUMBER_OF_DAYS}] [bot-api-token] [user-api-token]"
             $stderr.puts "Alternately you may specify the API token in ~/.slack-channel-archiver as 'api-token', or via envs BOT_SLACK_API_TOKEN / USER_SLACK_API_TOKEN"
@@ -75,7 +82,10 @@ class Launcher
         puts "Channels that have existed but have had no new messages for at least #{number_of_days} days will be archived"
         puts "Please note only one channel will be checked per second due to Slack API rate limits"
 
-        slack_channel_archiver = SlackChannelArchiver.new(bot_api_token, user_api_token)
+        ignored_channel_names = config['ignored-channel-names']
+        puts "The following channels will be ignored:\n * #{ignored_channel_names.join("\n * ")}" unless ignored_channel_names.nil? || ignored_channel_names.empty?
+
+        slack_channel_archiver = SlackChannelArchiver.new(bot_api_token, user_api_token, ignored_channel_names)
         archived_count, total_channels = slack_channel_archiver.archive_channels_inactive_for(number_of_days)
 
         puts "#{archived_count} of #{total_channels} channels were archived"
@@ -85,15 +95,17 @@ class Launcher
 
     DEFAULT_NUMBER_OF_DAYS = 90
 
-    def read_api_token(bot_api_token_arg, user_api_token_arg)
-        bot_api_token = bot_api_token_arg || ENV['BOT_SLACK_API_TOKEN']
-        user_api_token = user_api_token_arg || ENV['USER_SLACK_API_TOKEN']
-
-        if (bot_api_token.nil? || user_api_token.nil?) && File.exists?("#{Dir.home}/.slack-channel-archiver")
-            config = YAML.load_file("#{Dir.home}/.slack-channel-archiver")
-            bot_api_token = bot_api_token || config['bot-api-token']
-            user_api_token = user_api_token || config['user-api-token']
+    def read_config
+        if File.exists?("#{Dir.home}/.slack-channel-archiver")
+            YAML.load_file("#{Dir.home}/.slack-channel-archiver")
+        else
+            {}
         end
+    end
+
+    def read_api_token(bot_api_token_arg, user_api_token_arg, config)
+        bot_api_token = bot_api_token_arg || ENV['BOT_SLACK_API_TOKEN'] || config['bot-api-token']
+        user_api_token = user_api_token_arg || ENV['USER_SLACK_API_TOKEN'] || config['user-api-token']
 
         [bot_api_token, user_api_token]
     end
