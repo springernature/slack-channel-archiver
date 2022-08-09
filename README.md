@@ -6,7 +6,7 @@ A simple tool to help archive public channels that haven't been used for a while
 
 The following pre-requisites are required.
 
-* [Ruby](https://www.ruby-lang.org/) 2.5.3
+* [Ruby](https://www.ruby-lang.org/) 3.1.2
 * [Bundler](https://bundler.io/)
 
 This has only been tested in *nix environment (e.g. MacOS/Linux) although there's nothing tying it to these platforms.
@@ -69,4 +69,4 @@ Support is on a best-effort basis. We'll endeavour to keep it in a good state an
 
 This code is licenced under an MIT licence as described in [LICENSE](LICENSE).
 
-Copyright &copy; 2018 Springer Nature Ltd.
+Copyright &copy; 2018-2022 Springer Nature Ltd.
