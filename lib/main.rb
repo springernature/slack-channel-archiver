@@ -74,7 +74,7 @@ class Launcher
         config = read_config()
         bot_api_token, user_api_token = read_api_token(args[1], args[2], config)
         if number_of_days.nil? || bot_api_token.nil? || user_api_token.nil?
-            $stderr.puts "Usage: $0 [number-of-days=#{DEFAULT_NUMBER_OF_DAYS}] [bot-api-token] [user-api-token]"
+            $stderr.puts "Usage: #{$0} [number-of-days=#{DEFAULT_NUMBER_OF_DAYS}] [bot-api-token] [user-api-token]"
             $stderr.puts "Alternately you may specify the API token in ~/.slack-channel-archiver as 'api-token', or via envs BOT_SLACK_API_TOKEN / USER_SLACK_API_TOKEN"
             exit(1)
         end
