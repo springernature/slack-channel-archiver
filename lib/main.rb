@@ -14,16 +14,18 @@ class SlackChannelArchiver
     end
 
     def archive_channels_inactive_for(number_of_days)
-        unarchived_public_channels = @client.channels_list(exclude_archived: true).channels
-
+        channel_count = 0
         archived_count = 0
 
-        unarchived_public_channels.each do |current_channel|
-            archived_count += 1 if archive_channel_if_inactive_for(number_of_days, current_channel)
-            sleep(1)
+        @client.conversations_list(exclude_archived: true, limit: 100) do |response|
+            response.channels.each do |current_channel|
+                channel_count += 1
+                archived_count += 1 if archive_channel_if_inactive_for(number_of_days, current_channel)
+                sleep(1)
+            end
         end
 
-        [archived_count, unarchived_public_channels.length]
+        [archived_count, channel_count]
     end
 
     private
@@ -44,11 +46,11 @@ class SlackChannelArchiver
         archived = false
 
         if days_ago(Time.at(channel.created)) > number_of_days        
-            last_messages = @user_client.channels_history(channel: channel.id, count: 1)
+            last_messages = @user_client.conversations_history(channel: channel.id, count: 1)
             if last_messages.messages.empty?
                 archived = archive_channel(channel.id, channel.name, "This channel is older than #{number_of_days} days and has no messages, and will hence be archived")
 
-            elsif days_ago(last_messages.messages.first.ts.to_d) > number_of_days
+            elsif days_ago(last_messages.messages.first.ts.to_f) > number_of_days
                 archived = archive_channel(channel.id, channel.name, "This channel has had no new messages in #{number_of_days} and will hence be archived")
 
             else
@@ -96,7 +98,7 @@ class Launcher
     DEFAULT_NUMBER_OF_DAYS = 90
 
     def read_config
-        if File.exists?("#{Dir.home}/.slack-channel-archiver")
+        if File.exist?("#{Dir.home}/.slack-channel-archiver")
             YAML.load_file("#{Dir.home}/.slack-channel-archiver")
         else
             {}
