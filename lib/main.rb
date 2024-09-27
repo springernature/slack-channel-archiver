@@ -57,7 +57,7 @@ class SlackChannelArchiver
                 archived = archive_channel(channel.id, channel.name, "This channel is older than #{number_of_days} days and has no messages, and will hence be archived. You can unarchive it if this is not appropriate.")
 
             elsif days_ago(last_messages.messages.first.ts.to_f) > number_of_days
-                archived = archive_channel(channel.id, channel.name, "This channel has had no new messages in #{number_of_days} and will hence be archived. You can unarchive it if this is not appropriate.")
+                archived = archive_channel(channel.id, channel.name, "This channel has had no new messages in #{number_of_days} days and will hence be archived. You can unarchive it if this is not appropriate.")
 
             else
                 puts "- Channel #{channel.name} is in regular use"
