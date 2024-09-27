@@ -51,16 +51,25 @@ class SlackChannelArchiver
     def archive_channel_if_inactive_for(number_of_days, channel)
         archived = false
 
-        if days_ago(Time.at(channel.created)) > number_of_days        
-            last_messages = @user_client.conversations_history(channel: channel.id, count: 1)
-            if last_messages.messages.empty?
-                archived = archive_channel(channel.id, channel.name, "This channel is older than #{number_of_days} days and has no messages, and will hence be archived. You can unarchive it if this is not appropriate.")
+        if days_ago(Time.at(channel.created)) > number_of_days
+            done = false
+            while !done do
+                begin
+                    last_messages = @user_client.conversations_history(channel: channel.id, count: 1)
+                    if last_messages.messages.empty?
+                        archived = archive_channel(channel.id, channel.name, "This channel is older than #{number_of_days} days and has no messages, and will hence be archived. You can unarchive it if this is not appropriate.")
 
-            elsif days_ago(last_messages.messages.first.ts.to_f) > number_of_days
-                archived = archive_channel(channel.id, channel.name, "This channel has had no new messages in #{number_of_days} days and will hence be archived. You can unarchive it if this is not appropriate.")
+                    elsif days_ago(last_messages.messages.first.ts.to_f) > number_of_days
+                        archived = archive_channel(channel.id, channel.name, "This channel has had no new messages in #{number_of_days} days and will hence be archived. You can unarchive it if this is not appropriate.")
 
-            else
-                puts "- Channel #{channel.name} is in regular use"
+                    else
+                        puts "- Channel #{channel.name} is in regular use"
+                    end
+                    done = true
+                rescue Slack::Web::Api::Errors::TooManyRequestsError
+                    puts "e Request limit exceeded; waiting 30 seconds..."
+                    sleep(31)
+                end
             end
         else
             puts "- Channel #{channel.name} is newer than #{number_of_days} days"
