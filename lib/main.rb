@@ -49,9 +49,11 @@ class SlackChannelArchiver
     end
 
     def archive_channel_if_inactive_for(number_of_days, channel)
-        archived = false
-
-        if days_ago(Time.at(channel.created)) > number_of_days
+        if @ignored_channel_names.include?(channel.name)
+            puts "- Channel #{channel.name} is in the ignore list"
+            false
+        elsif days_ago(Time.at(channel.created)) > number_of_days
+            archived = false
             done = false
             while !done do
                 begin
@@ -71,11 +73,11 @@ class SlackChannelArchiver
                     sleep(31)
                 end
             end
+            archived
         else
             puts "- Channel #{channel.name} is newer than #{number_of_days} days"
+            false
         end
-
-        archived
     end
 
     def days_ago(time)
