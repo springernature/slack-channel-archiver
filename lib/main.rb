@@ -44,6 +44,9 @@ class SlackChannelArchiver
             rescue Slack::Web::Api::Errors::RestrictedAction
                 puts "e Channel #{channel_name} could not be archived due to limited posted permissions"
                 false
+            rescue Slack::Web::Api::Errors::NotSupported
+                puts "e Channel #{channel_name} does not allow archiving - is it connected to another organisation?"
+                false
             end
         end
     end
