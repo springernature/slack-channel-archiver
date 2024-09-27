@@ -11,12 +11,19 @@ The following pre-requisites are required.
 
 This has only been tested in *nix environment (e.g. MacOS/Linux) although there's nothing tying it to these platforms.
 
-You'll also require `bot` and `user` API tokens from Slack. You can obtain new API tokens by [creating a new App](https://api.slack.com/apps/new) in Slack. The token must have the following scopes:
-* `bot`
-* `chat:write:bot`
-* `channels:write`
+You'll also require `bot` and `user` API tokens from Slack. You can obtain new API tokens by [creating a new App](https://api.slack.com/apps/new) in Slack. 
+
+The bot token must have the following scopes:
+
+* `channels:history`
+* `channels:manage`
 * `channels:read`
-* `channels:history`.
+
+The user token must have the following scopes:
+
+* `channels:history`
+* `channels:read`
+* `channels:write`
 
 ## Configuration
 

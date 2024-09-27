@@ -36,9 +36,15 @@ class SlackChannelArchiver
             false
         else
             puts "x Channel #{channel_name} will be archived: #{archive_message}"
-            @client.chat_postMessage(channel: channel_id, text: archive_message) unless archive_message.nil?
-            @user_client.channels_archive(channel: channel_id)
-            true
+
+            begin
+                @client.chat_postMessage(channel: channel_id, text: archive_message) unless archive_message.nil?
+                @user_client.conversations_archive(channel: channel_id)
+                true
+            rescue Slack::Web::Api::Errors::RestrictedAction
+                puts "e Channel #{channel_name} could not be archived due to limited posted permissions"
+                false
+            end
         end
     end
 
@@ -48,10 +54,10 @@ class SlackChannelArchiver
         if days_ago(Time.at(channel.created)) > number_of_days        
             last_messages = @user_client.conversations_history(channel: channel.id, count: 1)
             if last_messages.messages.empty?
-                archived = archive_channel(channel.id, channel.name, "This channel is older than #{number_of_days} days and has no messages, and will hence be archived")
+                archived = archive_channel(channel.id, channel.name, "This channel is older than #{number_of_days} days and has no messages, and will hence be archived. You can unarchive it if this is not appropriate.")
 
             elsif days_ago(last_messages.messages.first.ts.to_f) > number_of_days
-                archived = archive_channel(channel.id, channel.name, "This channel has had no new messages in #{number_of_days} and will hence be archived")
+                archived = archive_channel(channel.id, channel.name, "This channel has had no new messages in #{number_of_days} and will hence be archived. You can unarchive it if this is not appropriate.")
 
             else
                 puts "- Channel #{channel.name} is in regular use"
