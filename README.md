@@ -76,4 +76,4 @@ Support is on a best-effort basis. We'll endeavour to keep it in a good state an
 
 This code is licenced under an MIT licence as described in [LICENSE](LICENSE).
 
-Copyright &copy; 2018-2022 Springer Nature Ltd.
+Copyright &copy; Springer Nature Ltd.
